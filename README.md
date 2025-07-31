@@ -1,9 +1,9 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#2c3e50">
-  <title>سجل مخزن المبيدات | Store Stock</title>
+  <title>سجل مخزن المبيدات</title>
   <link rel="manifest" href="manifest.json">
   <!-- خط عربي واضح لدعم اللغة في PDF -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
@@ -307,6 +307,9 @@
     </div>
   </div>
 
+  <!-- قالب PDF (مرئي تقنيًا) -->
+  <div id="pdfTemplate" style="position: absolute; top: -9999px; left: -9999px; width: 210mm; padding: 25px; background: white; direction: rtl; font-family: 'Amiri', 'Segoe UI', sans-serif; z-index: -1;"></div>
+
   <!-- الفوتر -->
   <footer>
     تم التطوير بواسطة <a href="mailto:example@example.com" target="_blank">م.أحمد المعشني</a> &copy; 2025
@@ -314,7 +317,7 @@
 
   <!-- تحميل المكتبات -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
     // التحقق من دعم localStorage
@@ -544,55 +547,70 @@
       alert(isEnglish ? 'Deleted!' : 'تم الحذف!');
     }
 
-    // تنزيل PDF (يدعم العربية بشكل واضح)
+    // تنزيل PDF (باستخدام html2canvas لدعم العربية)
     function downloadInventoryPDF(index) {
       const inv = inventories.filter(i => i.store === currentStore)[index];
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({
+      const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      // تضمين خط عربي واضح
-      doc.setFont('Amiri', 'normal');
-      doc.setFontSize(20);
+      const template = document.getElementById('pdfTemplate');
+      template.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2c3e50; font-size: 24px; margin: 0; font-family: 'Amiri', sans-serif;">تقرير الجرد</h1>
+          <h2 style="font-size: 20px; margin: 10px 0; font-family: 'Amiri', sans-serif;">${inv.date}</h2>
+        </div>
+        <div style="margin: 20px 0; font-family: 'Amiri', sans-serif;">
+          <p><strong>المخزن:</strong> ${inv.store}</p>
+          <p><strong>المسؤول:</strong> ${inv.person}</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-family: 'Amiri', sans-serif;">
+          <thead>
+            <tr style="background-color: #3498db; color: white;">
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">اسم المبيد</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">الكمية</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${inv.items.map(item => `
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${item.pesticide}</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${item.quantity}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="text-align: center; margin-top: 40px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 15px; font-family: 'Amiri', sans-serif;">
+          تم إنشاء هذا التقرير باستخدام تطبيق سجل مخزن المبيدات
+        </div>
+      `;
 
-      const title = isEnglish ? `Inventory Report - ${inv.date}` : `تقرير الجرد - ${inv.date}`;
-      const storeText = isEnglish ? `المخزن: ${inv.store}` : `المخزن: ${inv.store}`;
-      const personText = isEnglish ? `المسؤول: ${inv.person}` : `المسؤول: ${inv.person}`;
-      const headers = isEnglish ? [['Pesticide', 'Quantity']] : [['اسم المبيد', 'الكمية']];
-      const data = inv.items.map(item => [item.pesticide, item.quantity]);
+      try {
+        // الانتظار حتى تحميل العناصر
+        setTimeout(async () => {
+          const canvas = await html2canvas(template, {
+            scale: 3,
+            useCORS: true,
+            backgroundColor: 'white',
+            logging: false
+          });
 
-      doc.text(title, 14, 15);
-      doc.setFontSize(16);
-      doc.text(storeText, 14, 25);
-      doc.text(personText, 14, 32);
+          const imgData = canvas.toDataURL('image/jpeg', 0.9);
+          const width = pdf.internal.pageSize.getWidth();
+          const height = (canvas.height * width) / canvas.width;
 
-      doc.autoTable({
-        head: headers,
-        body: data,
-        startY: 40,
-        theme: 'grid',
-        styles: {
-          font: 'Amiri',
-          halign: 'right',
-          rtl: true,
-          fontSize: 12,
-          cellPadding: 4
-        },
-        headStyles: {
-          fillColor: [52, 152, 219],
-          textColor: 255,
-          halign: 'center'
-        },
-        columnStyles: {
-          0: { cellWidth: 'auto' },
-          1: { halign: 'center' }
-        }
-      });
+          pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
+          pdf.save(`تقرير_جرد_${inv.date}.pdf`);
 
-      doc.save(isEnglish ? `Inventory_${inv.date}.pdf` : `جرد_${inv.date}.pdf`);
+          template.innerHTML = '';
+        }, 500);
+      } catch (error) {
+        console.error('خطأ في إنشاء PDF:', error);
+        alert('فشل إنشاء PDF. تأكد من اتصال الإنترنت.');
+      }
     }
 
     // تحميل البيانات
