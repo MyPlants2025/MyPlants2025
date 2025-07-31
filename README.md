@@ -3,7 +3,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#2c3e50">
-  <title>سجل مخزن المبيدات</title>
+  <title>سجل مخزن المبيدات | Store Stock</title>
   <link rel="manifest" href="manifest.json">
   <!-- خط عربي واضح لدعم اللغة في PDF -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
@@ -220,6 +220,17 @@
       margin-top: 20px;
     }
 
+    .download-all-btn {
+      background-color: #8e44ad;
+      color: white;
+      font-size: 16px;
+      padding: 12px 20px;
+      margin: 10px 0;
+      display: block;
+      width: fit-content;
+      margin: 20px auto;
+    }
+
     footer {
       text-align: center;
       margin-top: 60px;
@@ -266,6 +277,11 @@
       <button class="add-button" onclick="addPesticide()">➕ إضافة مبيد</button>
       <button class="delete-button" onclick="deletePesticideByName()">🗑️ حذف مبيد</button>
     </div>
+
+    <!-- زر تنزيل جميع المبيدات -->
+    <button class="download-all-btn" onclick="downloadAllPesticidesPDF()">
+      📥 تنزيل جميع المبيدات كـ PDF
+    </button>
   </div>
 
   <!-- صفحة الجرد -->
@@ -547,7 +563,7 @@
       alert(isEnglish ? 'Deleted!' : 'تم الحذف!');
     }
 
-    // تنزيل PDF (باستخدام html2canvas لدعم العربية)
+    // تنزيل تقرير الجرد
     function downloadInventoryPDF(index) {
       const inv = inventories.filter(i => i.store === currentStore)[index];
       const { jsPDF } = window.jspdf;
@@ -589,7 +605,6 @@
       `;
 
       try {
-        // الانتظار حتى تحميل العناصر
         setTimeout(async () => {
           const canvas = await html2canvas(template, {
             scale: 3,
@@ -604,7 +619,52 @@
 
           pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
           pdf.save(`تقرير_جرد_${inv.date}.pdf`);
+          template.innerHTML = '';
+        }, 500);
+      } catch (error) {
+        console.error('خطأ في إنشاء PDF:', error);
+        alert('فشل إنشاء PDF. تأكد من اتصال الإنترنت.');
+      }
+    }
 
+    // تنزيل جميع المبيدات كـ PDF
+    function downloadAllPesticidesPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const template = document.getElementById('pdfTemplate');
+      template.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2c3e50; font-size: 24px; margin: 0; font-family: 'Amiri', sans-serif;">قائمة جميع المبيدات</h1>
+          <p style="font-size: 16px; color: #555; font-family: 'Amiri', sans-serif;">تم التحديث: ${new Date().toLocaleDateString()}</p>
+        </div>
+        <ol style="font-family: 'Amiri', sans-serif; font-size: 16px; line-height: 2; padding-right: 20px;">
+          ${pesticides.map((pesticide, index) => `<li style="margin: 8px 0;">${pesticide}</li>`).join('')}
+        </ol>
+        <div style="text-align: center; margin-top: 40px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 15px; font-family: 'Amiri', sans-serif;">
+          تم إنشاء هذه القائمة باستخدام تطبيق سجل مخزن المبيدات
+        </div>
+      `;
+
+      try {
+        setTimeout(async () => {
+          const canvas = await html2canvas(template, {
+            scale: 3,
+            useCORS: true,
+            backgroundColor: 'white',
+            logging: false
+          });
+
+          const imgData = canvas.toDataURL('image/jpeg', 0.9);
+          const width = pdf.internal.pageSize.getWidth();
+          const height = (canvas.height * width) / canvas.width;
+
+          pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
+          pdf.save('جميع_المبيدات.pdf');
           template.innerHTML = '';
         }, 500);
       } catch (error) {
