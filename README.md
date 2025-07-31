@@ -1,15 +1,20 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="theme-color" content="#27ae60">
-  <title>زراعتي - تطبيق الزراعة الذكي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2c3e50">
+  <title>سجل مخزن المبيدات | Store Stock</title>
   <link rel="manifest" href="manifest.json">
+  <!-- خط عربي واضح لدعم اللغة في PDF -->
+  <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #27ae60;
-      --light: #f4f8f7;
-      --dark: #2c3e50;
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --light: #f4f4f9;
       --shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
@@ -17,362 +22,299 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', 'Tahoma', sans-serif;
     }
 
     body {
       background-color: var(--light);
       color: var(--dark);
-      line-height: 1.6;
+      line-height: 1.7;
+      direction: rtl;
     }
 
     .container {
       max-width: 1200px;
-      margin: 20px auto;
-      padding: 15px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
 
     header h1 {
       color: var(--primary);
       font-size: 1.8rem;
+      margin-bottom: 10px;
     }
 
-    .search-box {
-      width: 100%;
-      padding: 14px;
+    .language-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
       font-size: 16px;
-      border: 1px solid #bdc3c7;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      outline: none;
-    }
-
-    .btn {
+      cursor: pointer;
       background-color: var(--primary);
       color: white;
       border: none;
-      padding: 12px 20px;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    .language-button:hover {
+      background-color: #1a252f;
+    }
+
+    .input-group {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .input-group input {
+      padding: 12px;
       font-size: 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      width: 280px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      outline: none;
       margin: 5px;
     }
 
-    .btn:hover {
-      background-color: #219653;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      margin: 5px;
+      transition: background 0.3s;
     }
 
-    .btn-danger {
-      background-color: #e74c3c;
+    .store-button {
+      background-color: var(--secondary);
+      color: white;
     }
 
-    .btn-danger:hover {
+    .store-button:hover {
+      background-color: #2980b9;
+    }
+
+    .add-button {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .add-button:hover {
+      background-color: #27ae60;
+    }
+
+    .delete-button {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .delete-button:hover {
       background-color: #c0392b;
     }
 
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 14px;
+    .date-button {
+      background-color: #9b59b6;
+      color: white;
     }
 
-    .actions-row {
+    .date-button:hover {
+      background-color: #8e44ad;
+    }
+
+    .button {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .button:hover {
+      background-color: #27ae60;
+    }
+
+    .edit-button {
+      background-color: var(--warning);
+      color: white;
+    }
+
+    .edit-button:hover {
+      background-color: #e67e22;
+    }
+
+    .delete-inventory-button {
+      background-color: #c0392b;
+      color: white;
+    }
+
+    .delete-inventory-button:hover {
+      background-color: #a93226;
+    }
+
+    .pdf-button {
+      background-color: #8e44ad;
+      color: white;
+    }
+
+    .pdf-button:hover {
+      background-color: #7d3c98;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    table {
+      width: 100%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: var(--shadow);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 14px;
+      text-align: center;
+    }
+
+    th {
+      background-color: var(--secondary);
+      color: white;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .current-date {
+      font-size: 18px;
+      margin: 15px 0;
+      color: var(--dark);
+      font-weight: bold;
+    }
+
+    .past-date {
+      color: var(--secondary);
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .person-info {
+      font-size: 14px;
+      color: #555;
+      margin-top: 5px;
+    }
+
+    .actions {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-top: 20px;
     }
 
-    .crops-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .crop-card {
-      background: white;
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-
-    .crop-card:hover {
-      transform: translateY(-5px);
-    }
-
-    .crop-img-container {
-      height: 150px;
-      overflow: hidden;
-    }
-
-    .crop-img-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .crop-info {
-      padding: 15px;
-    }
-
-    .crop-name {
-      font-weight: bold;
-      color: var(--primary);
-    }
-
-    .crop-scientific {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .crop-actions {
-      display: flex;
-      gap: 5px;
-      margin-top: 10px;
-    }
-
-    /* نافذة الإضافة/التعديل */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      overflow-y: auto;
+    footer {
+      text-align: center;
+      margin-top: 60px;
       padding: 20px;
+      background-color: var(--primary);
+      color: white;
+      font-size: 14px;
+      border-top: 3px solid var(--secondary);
     }
 
-    .modal-content {
-      background-color: white;
-      margin: 5% auto;
-      padding: 25px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 520px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    footer a {
+      color: var(--secondary);
+      text-decoration: none;
     }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .modal-header h2 {
-      color: var(--primary);
-    }
-
-    .close {
-      font-size: 28px;
-      font-weight: bold;
-      color: #aaa;
-      cursor: pointer;
-    }
-
-    .close:hover {
-      color: #000;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
-
-    .form-group input,
-    .form-group textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #bdc3c7;
-      border-radius: 8px;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .form-group textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    .preview-img {
-      max-width: 100%;
-      height: 120px;
-      object-fit: cover;
-      margin-top: 10px;
-      border-radius: 8px;
-      display: none;
-    }
-
-    /* تفاصيل المحصول */
-    .detail-content {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-
-    .detail-img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-
-    .detail-row {
-      display: flex;
-      margin-bottom: 12px;
-    }
-
-    .detail-label {
-      font-weight: bold;
-      color: var(--primary);
-      min-width: 130px;
-    }
-
-    .detail-value {
-      flex: 1;
-    }
-
-    .detail-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    /* إخفاء ملف الاستيراد */
-    #importFile {
-      display: none;
-    }
-
-    /* قالب PDF */
-    #pdfContainer {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-      width: 210mm;
-      min-height: 297mm;
-      background: white;
-      padding: 25px;
-      box-sizing: border-box;
-      direction: rtl;
-      font-family: 'Segoe UI', sans-serif;
-      z-index: -1;
+    footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <!-- زر تبديل اللغة -->
+  <button class="language-button" id="languageButton">English</button>
+
+  <!-- الصفحة الرئيسية -->
+  <div id="mainPage" class="container">
     <header>
-      <h1>زراعتي 🌿</h1>
-      <p>تطبيق إدارة المحاصيل الذكي</p>
+      <h1 data-ar="سجل مخزن المبيدات" data-en="Store Stock">سجل مخزن المبيدات</h1>
+      <p data-ar="نظام إدارة جرد المخازن الذكي" data-en="Smart Store Inventory System">نظام إدارة جرد المخازن الذكي</p>
     </header>
 
-    <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن محصول..." />
-
-    <div class="actions-row">
-      <button id="addCropBtn" class="btn">➕ إضافة محصول</button>
-      <button id="exportBtn" class="btn">📤 تصدير البيانات</button>
-      <button id="importBtn" class="btn">📥 استيراد البيانات</button>
-      <input type="file" id="importFile" accept=".json" />
+    <div class="input-group">
+      <input type="text" id="storeName" placeholder="أدخل اسم المخزن" data-ar-placeholder="أدخل اسم المخزن" data-en-placeholder="Enter store name" />
+      <button class="add-button" onclick="addStore()">➕ إضافة مخزن</button>
     </div>
 
-    <div id="cropsList" class="crops-grid"></div>
-  </div>
+    <div id="storesList"></div>
 
-  <!-- نافذة إضافة/تعديل -->
-  <div id="cropModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="modalTitle">إضافة محصول جديد</h2>
-        <span class="close">&times;</span>
-      </div>
-      <form id="cropForm">
-        <div class="form-group">
-          <label>اختر صورة</label>
-          <input type="file" id="cropImage" accept="image/*" />
-          <img id="preview" class="preview-img" src="" alt="معاينة الصورة" />
-        </div>
-        <div class="form-group">
-          <label>الاسم المحلي *</label>
-          <input type="text" id="localName" required />
-        </div>
-        <div class="form-group">
-          <label>الاسم العلمي</label>
-          <input type="text" id="scientificName" />
-        </div>
-        <div class="form-group">
-          <label>فترة التزهير</label>
-          <input type="text" id="floweringPeriod" />
-        </div>
-        <div class="form-group">
-          <label>فترة الثمار</label>
-          <input type="text" id="fruitingPeriod" />
-        </div>
-        <div class="form-group">
-          <label>عائلة النبتة</label>
-          <input type="text" id="family" />
-        </div>
-        <div class="form-group">
-          <label>عمر النبتة</label>
-          <input type="text" id="lifespan" />
-        </div>
-        <div class="form-group">
-          <label>الموقع</label>
-          <input type="text" id="location" />
-        </div>
-        <div class="form-group">
-          <label>احتياج التسميد</label>
-          <textarea id="fertilizationNeeds" rows="3"></textarea>
-        </div>
-        <button type="submit" class="btn">💾 حفظ المحصول</button>
-      </form>
+    <!-- إدارة المبيدات -->
+    <h2 data-ar="إدارة المبيدات" data-en="Pesticide Management" style="text-align:center; margin:20px 0; color:var(--primary);">إدارة المبيدات</h2>
+    <div class="input-group">
+      <input type="text" id="pesticideName" placeholder="أدخل اسم المبيد" data-ar-placeholder="أدخل اسم المبيد" data-en-placeholder="Enter pesticide name" />
+      <button class="add-button" onclick="addPesticide()">➕ إضافة مبيد</button>
+      <button class="delete-button" onclick="deletePesticideByName()">🗑️ حذف مبيد</button>
     </div>
   </div>
 
-  <!-- نافذة التفاصيل -->
-  <div id="detailModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="detailTitle">تفاصيل المحصول</h2>
-        <span class="close-detail">&times;</span>
+  <!-- صفحة الجرد -->
+  <div id="inventoryPage" class="container hidden">
+    <button class="button" onclick="goBack()">↩️ رجوع</button>
+    <h1 id="storeTitle" style="text-align:center; color:var(--primary); margin:20px 0;"></h1>
+
+    <div class="actions">
+      <button class="button" onclick="newInventory()">🆕 جرد جديد</button>
+      <button class="button" onclick="viewPastInventories()">📋 عمليات جرد سابقة</button>
+    </div>
+
+    <!-- قسم الجرد الجديد -->
+    <div id="newInventorySection" class="hidden">
+      <h2 data-ar="جرد جديد" data-en="New Inventory" style="text-align:center; margin:20px 0;">جرد جديد</h2>
+      <div class="input-group">
+        <input type="text" id="personName" placeholder="اسم المسؤول عن الجرد" data-ar-placeholder="اسم المسؤول عن الجرد" data-en-placeholder="Person in charge" />
       </div>
-      <div id="detailContent" class="detail-content"></div>
-      <div class="detail-actions">
-        <button id="editCropBtn" class="btn btn-sm">✏️ تعديل</button>
-        <button id="deleteCropBtn" class="btn btn-sm btn-danger">🗑️ حذف</button>
-        <button id="copyToClipboard" class="btn btn-sm">📋 نسخ</button>
-        <button id="downloadPdfBtn" class="btn">تنزيل كـ PDF</button>
-      </div>
+      <button class="date-button" onclick="recordTodayDate()">📅 تسجيل تاريخ اليوم</button>
+      <div id="currentDateDisplay" class="current-date"></div>
+
+      <table id="inventoryTable">
+        <thead>
+          <tr>
+            <th data-ar="اسم المبيد" data-en="Pesticide Name">اسم المبيد</th>
+            <th data-ar="الكمية الحالية" data-en="Current Quantity">الكمية الحالية</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button class="button" onclick="saveInventory()">💾 حفظ الجرد</button>
+    </div>
+
+    <!-- قسم عمليات الجرد السابقة -->
+    <div id="pastInventoriesSection" class="hidden">
+      <h2 data-ar="عمليات جرد سابقة" data-en="History" style="text-align:center; margin:20px 0;">عمليات جرد سابقة</h2>
+      <ul id="pastInventoriesList" style="list-style:none; padding:0;"></ul>
     </div>
   </div>
 
-  <!-- قالب PDF -->
-  <div id="pdfContainer"></div>
+  <!-- الفوتر -->
+  <footer>
+    تم التطوير بواسطة <a href="mailto:example@example.com" target="_blank">م.أحمد المعشني</a> &copy; 2025
+  </footer>
 
   <!-- تحميل المكتبات -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <script>
     // التحقق من دعم localStorage
@@ -380,386 +322,284 @@
       alert('متصفحك لا يدعم التخزين المحلي.');
     }
 
-    // تسجيل Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js').catch(() => {});
-      });
-    }
-
     // المتغيرات
-    let crops = JSON.parse(localStorage.getItem('crops') || '[]');
-    let currentCropId = null;
+    let pesticides = JSON.parse(localStorage.getItem('pesticides')) || [
+      "Actara", "Avaunt", "Benevia", "Cal-Ex Avance", "Coragen", "Decis Expert", "Evisect", "Floramite",
+      "Green Lambada", "Karate Zeon", "Milbeknock", "Mospilan", "Movento", "Ortus", "Plesiva Pro", "Radiant",
+      "Sivanto Prime", "Starkle", "Sumi Alpha", "Tracer", "Trebon", "Tripsol", "Vertimec", "Voliam Flexi",
+      "Vydate", "Hallmark", "Triclopyer", "Amistar Top", "Armetil C", "Curenox", "Equation", "Kocide",
+      "Luna Sensation", "Miravise", "Ortiva", "Previcur Energy", "Score", "Top Guard", "Uniform",
+      "Bio Cure-B", "Bio Cure-F", "Bio Catch", "Bio Power", "Mustard Oil", "Nimbecidine", "Xen Tari", "Dome Soap", "Sluge Killer"
+    ];
+    let currentStore = '';
+    let inventories = JSON.parse(localStorage.getItem('inventories')) || [];
+    let currentDate = '';
+    let isEnglish = false;
 
-    const searchInput = document.getElementById('searchInput');
-    const cropsList = document.getElementById('cropsList');
-    const addCropBtn = document.getElementById('addCropBtn');
-    const cropModal = document.getElementById('cropModal');
-    const detailModal = document.getElementById('detailModal');
-    const cropForm = document.getElementById('cropForm');
-    const preview = document.getElementById('preview');
-    const cropImage = document.getElementById('cropImage');
-    const pdfContainer = document.getElementById('pdfContainer');
-
-    // عرض الصورة
-    cropImage.addEventListener('change', () => {
-      const file = cropImage.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-        };
-        reader.onerror = () => alert('فشل تحميل الصورة');
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // فتح/إغلاق النافذات
-    addCropBtn.onclick = () => openCropModal();
-    document.querySelector('.close')?.addEventListener('click', () => cropModal.style.display = 'none');
-    document.querySelector('.close-detail')?.addEventListener('click', () => detailModal.style.display = 'none');
-    window.onclick = (e) => {
-      if (e.target === cropModal) cropModal.style.display = 'none';
-      if (e.target === detailModal) detailModal.style.display = 'none';
-    };
-
-    // فتح نافذة الإضافة أو التعديل
-    function openCropModal(crop = null) {
-      cropForm.reset();
-      preview.style.display = 'none';
-      document.getElementById('modalTitle').textContent = crop ? 'تعديل المحصول' : 'إضافة محصول جديد';
-      currentCropId = crop ? crop.id : null;
-
-      if (crop) {
-        document.getElementById('localName').value = crop.localName;
-        document.getElementById('scientificName').value = crop.scientificName || '';
-        document.getElementById('floweringPeriod').value = crop.floweringPeriod || '';
-        document.getElementById('fruitingPeriod').value = crop.fruitingPeriod || '';
-        document.getElementById('family').value = crop.family || '';
-        document.getElementById('lifespan').value = crop.lifespan || '';
-        document.getElementById('location').value = crop.location || '';
-        document.getElementById('fertilizationNeeds').value = crop.fertilizationNeeds || '';
-        if (crop.image) {
-          preview.src = crop.image;
-          preview.style.display = 'block';
-        }
-      }
-      cropModal.style.display = 'block';
-    }
-
-    // ضغط الصورة
-    function compressImage(file, maxWidth = 800) {
-      return new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          let width = img.width;
-          let height = img.height;
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(blob => {
-            const compressed = new File([blob], file.name, { type: 'image/jpeg' });
-            resolve(compressed);
-          }, 'image/jpeg', 0.7);
-        };
-        img.src = URL.createObjectURL(file);
-      });
-    }
-
-    // تحويل الصورة إلى Base64
-    function toBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error('فشل قراءة الملف'));
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // حفظ المحصول
-    cropForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const localName = document.getElementById('localName').value.trim();
-      if (!localName) {
-        alert('الاسم المحلي مطلوب');
-        return;
-      }
-
-      const file = cropImage.files[0];
-      let imageUrl = currentCropId ? crops.find(c => c.id === currentCropId)?.image : '';
-
-      if (file) {
-        try {
-          const compressedFile = await compressImage(file);
-          imageUrl = await toBase64(compressedFile);
-        } catch (error) {
-          alert('فشل تحميل الصورة. حاول صورة أصغر.');
-          return;
-        }
-      }
-
-      const cropData = {
-        id: currentCropId || Date.now().toString(),
-        image: imageUrl,
-        localName,
-        scientificName: document.getElementById('scientificName').value,
-        floweringPeriod: document.getElementById('floweringPeriod').value,
-        fruitingPeriod: document.getElementById('fruitingPeriod').value,
-        family: document.getElementById('family').value,
-        lifespan: document.getElementById('lifespan').value,
-        location: document.getElementById('location').value,
-        fertilizationNeeds: document.getElementById('fertilizationNeeds').value,
-      };
-
-      if (currentCropId) {
-        crops = crops.map(c => c.id === currentCropId ? cropData : c);
-      } else {
-        crops.push(cropData);
-      }
-
+    // حفظ البيانات
+    function saveData() {
       try {
-        localStorage.setItem('crops', JSON.stringify(crops));
-        cropModal.style.display = 'none';
-        renderCrops();
-        alert('تم الحفظ بنجاح!');
+        localStorage.setItem('pesticides', JSON.stringify(pesticides));
+        localStorage.setItem('inventories', JSON.stringify(inventories));
       } catch (e) {
-        alert('فشل الحفظ. الجهاز ممتلئ أو المتصفح قديم.');
-      }
-    });
-
-    // حذف المحصول
-    function deleteCrop(id) {
-      if (confirm('هل أنت متأكد من الحذف؟')) {
-        crops = crops.filter(c => c.id !== id);
-        localStorage.setItem('crops', JSON.stringify(crops));
-        detailModal.style.display = 'none';
-        renderCrops();
-        alert('تم الحذف بنجاح!');
+        alert('فشل حفظ البيانات. الجهاز ممتلئ أو المتصفح قديم.');
       }
     }
 
-    // عرض المحاصيل
-    function renderCrops() {
-      const term = searchInput.value.toLowerCase();
-      cropsList.innerHTML = '';
-      const filtered = crops.filter(crop =>
-        crop.localName.toLowerCase().includes(term) ||
-        (crop.scientificName && crop.scientificName.toLowerCase().includes(term))
-      );
+    // تحويل اللغة
+    document.getElementById('languageButton').addEventListener('click', () => {
+      isEnglish = !isEnglish;
+      updateLanguage();
+      document.getElementById('languageButton').textContent = isEnglish ? 'العربية' : 'English';
+    });
 
-      if (filtered.length === 0) {
-        cropsList.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; color: #777; padding: 40px;">
-            <p>لا توجد محاصيل. أضف واحدًا!</p>
-          </div>`;
-        return;
-      }
-
-      filtered.forEach(crop => {
-        const div = document.createElement('div');
-        div.className = 'crop-card';
-        div.innerHTML = `
-          <div class="crop-img-container">
-            <img src="${crop.image || 'https://via.placeholder.com/300x150?text=لا+صورة'}" alt="${crop.localName}" />
-          </div>
-          <div class="crop-info">
-            <div class="crop-name">${crop.localName}</div>
-            <div class="crop-scientific">${crop.scientificName || 'لا يوجد اسم علمي'}</div>
-            <div class="crop-actions">
-              <button data-id="${crop.id}" class="edit-btn btn btn-sm">✏️</button>
-              <button data-id="${crop.id}" class="delete-btn btn btn-sm btn-danger">🗑️</button>
-            </div>
-          </div>
-        `;
-        div.querySelector('.edit-btn').onclick = (e) => {
-          e.stopPropagation();
-          openCropModal(crops.find(c => c.id === e.target.dataset.id));
-        };
-        div.querySelector('.delete-btn').onclick = (e) => {
-          e.stopPropagation();
-          deleteCrop(e.target.dataset.id);
-        };
-        div.onclick = () => showCropDetail(crop);
-        cropsList.appendChild(div);
+    // تحديث النصوص
+    function updateLanguage() {
+      document.querySelectorAll('[data-ar], [data-en]').forEach(el => {
+        el.textContent = isEnglish ? el.getAttribute('data-en') : el.getAttribute('data-ar');
+      });
+      document.querySelectorAll('[data-ar-placeholder], [data-en-placeholder]').forEach(el => {
+        el.placeholder = isEnglish ? el.getAttribute('data-en-placeholder') : el.getAttribute('data-ar-placeholder');
       });
     }
 
-    // عرض التفاصيل
-    function showCropDetail(crop) {
-      currentCropId = crop.id;
-      const detailContent = document.getElementById('detailContent');
-      detailContent.innerHTML = `
-        ${crop.image ? `<img src="${crop.image}" class="detail-img" alt="${crop.localName}" />` : ''}
-        <div class="detail-row">
-          <div class="detail-label">الاسم المحلي:</div>
-          <div class="detail-value">${crop.localName}</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">الاسم العلمي:</div>
-          <div class="detail-value">${crop.scientificName || 'غير محدد'}</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">فترة التزهير:</div>
-          <div class="detail-value">${crop.floweringPeriod || 'غير محدد'}</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">فترة الثمار:</div>
-          <div class="detail-value">${crop.fruitingPeriod || 'غير محدد'}</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">عائلة النبتة:</div>
-          <div class="detail-value">${crop.family || 'غير محدد'}</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">عمر النبتة:</div>
-          <div class="detail-value">${crop.lifespan || 'غير محدد'}</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">الموقع:</div>
-          <div class="detail-value">${crop.location || 'غير محدد'}</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">احتياج التسميد:</div>
-          <div class="detail-value">${crop.fertilizationNeeds || 'غير محدد'}</div>
-        </div>
-      `;
-      document.getElementById('detailTitle').textContent = crop.localName;
-      detailModal.style.display = 'block';
+    // إضافة مبيد
+    function addPesticide() {
+      const name = document.getElementById('pesticideName').value.trim();
+      if (!name) return alert(isEnglish ? 'Enter a valid name.' : 'أدخل اسمًا صالحًا.');
+      if (pesticides.includes(name)) return alert(isEnglish ? 'Already exists.' : 'المبيد موجود مسبقًا.');
+      pesticides.push(name);
+      saveData();
+      alert(isEnglish ? `Added: ${name}` : `تمت الإضافة: ${name}`);
+      document.getElementById('pesticideName').value = '';
     }
 
-    // نسخ التفاصيل
-    document.getElementById('copyToClipboard').addEventListener('click', () => {
-      const text = document.getElementById('detailContent').innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        alert('تم النسخ إلى الحافظة!');
-      }).catch(() => alert('فشل النسخ'));
-    });
+    // حذف مبيد
+    function deletePesticideByName() {
+      const name = document.getElementById('pesticideName').value.trim();
+      if (!name) return alert(isEnglish ? 'Enter a name to delete.' : 'أدخل اسمًا للحذف.');
+      if (!pesticides.includes(name)) return alert(isEnglish ? 'Not found.' : 'غير موجود.');
+      if (!confirm(isEnglish ? `Delete ${name}?` : `حذف ${name}؟`)) return;
+      pesticides = pesticides.filter(p => p !== name);
+      saveData();
+      alert(isEnglish ? `Deleted: ${name}` : `تم الحذف: ${name}`);
+      document.getElementById('pesticideName').value = '';
+    }
 
-    // تعديل
-    document.getElementById('editCropBtn').addEventListener('click', () => {
-      const crop = crops.find(c => c.id === currentCropId);
-      openCropModal(crop);
-      detailModal.style.display = 'none';
-    });
+    // إضافة مخزن
+    function addStore() {
+      const name = document.getElementById('storeName').value.trim();
+      if (!name) return alert(isEnglish ? 'Enter store name.' : 'أدخل اسم المخزن.');
+      const storeButton = document.createElement('button');
+      storeButton.textContent = name;
+      storeButton.className = 'store-button';
+      storeButton.onclick = () => showInventoryPage(name);
+      document.getElementById('storesList').appendChild(storeButton);
+      document.getElementById('storeName').value = '';
+    }
 
-    // حذف
-    document.getElementById('deleteCropBtn').addEventListener('click', () => {
-      deleteCrop(currentCropId);
-    });
+    // فتح صفحة الجرد
+    function showInventoryPage(storeName) {
+      currentStore = storeName;
+      document.getElementById('mainPage').classList.add('hidden');
+      document.getElementById('inventoryPage').classList.remove('hidden');
+      document.getElementById('storeTitle').textContent = isEnglish ? `Store: ${storeName}` : `جرد المخزن: ${storeName}`;
+    }
 
-    // تنزيل كـ PDF
-    document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
-      const crop = crops.find(c => c.id === currentCropId);
-      if (!crop) return;
+    // الرجوع
+    function goBack() {
+      document.getElementById('inventoryPage').classList.add('hidden');
+      document.getElementById('mainPage').classList.remove('hidden');
+    }
 
+    // جرد جديد
+    function newInventory() {
+      document.getElementById('newInventorySection').classList.remove('hidden');
+      document.getElementById('pastInventoriesSection').classList.add('hidden');
+      document.getElementById('personName').value = '';
+      populateInventoryTable();
+    }
+
+    // تسجيل التاريخ
+    function recordTodayDate() {
+      const today = new Date().toLocaleDateString();
+      currentDate = today;
+      document.getElementById('currentDateDisplay').textContent = isEnglish ? `التاريخ: ${today}` : `التاريخ: ${today}`;
+    }
+
+    // عرض الجرد السابق
+    function viewPastInventories() {
+      document.getElementById('newInventorySection').classList.add('hidden');
+      document.getElementById('pastInventoriesSection').classList.remove('hidden');
+      displayPastInventories();
+    }
+
+    // تعبئة الجدول
+    function populateInventoryTable() {
+      const tbody = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+      pesticides.forEach(pesticide => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${pesticide}</td>
+          <td><input type="number" value="0" min="0" style="width:80px; padding:5px; text-align:center;" /></td>
+        `;
+      });
+    }
+
+    // حفظ الجرد
+    function saveInventory() {
+      if (!currentDate) recordTodayDate();
+      const personName = document.getElementById('personName').value.trim() || 'غير محدد';
+      const rows = document.querySelectorAll('#inventoryTable tbody tr');
+      const items = Array.from(rows).map(row => ({
+        pesticide: row.cells[0].textContent,
+        quantity: row.cells[1].querySelector('input').value
+      }));
+      inventories.push({ date: currentDate, store: currentStore, items, person: personName });
+      saveData();
+      alert(isEnglish ? 'Saved successfully!' : 'تم الحفظ بنجاح!');
+    }
+
+    // عرض الجرد السابق
+    function displayPastInventories() {
+      const list = document.getElementById('pastInventoriesList');
+      list.innerHTML = '';
+      const filtered = inventories.filter(inv => inv.store === currentStore);
+      filtered.forEach((inv, index) => {
+        const li = document.createElement('li');
+        li.style.margin = '10px 0';
+        li.style.padding = '15px';
+        li.style.border = '1px solid #ddd';
+        li.style.borderRadius = '10px';
+        li.style.backgroundColor = 'white';
+        li.style.display = 'flex';
+        li.style.flexDirection = 'column';
+        li.style.alignItems = 'center';
+        li.style.gap = '10px';
+
+        const dateSpan = document.createElement('span');
+        dateSpan.textContent = inv.date;
+        dateSpan.className = 'past-date';
+        dateSpan.onclick = () => downloadInventoryPDF(index);
+
+        const personSpan = document.createElement('span');
+        personSpan.className = 'person-info';
+        personSpan.textContent = isEnglish ? `المسؤول: ${inv.person}` : `المسؤول: ${inv.person}`;
+
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.style.display = 'flex';
+        buttonsDiv.style.gap = '10px';
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = isEnglish ? 'Edit' : 'تعديل';
+        editBtn.className = 'edit-button';
+        editBtn.onclick = () => editInventory(index);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = isEnglish ? 'Delete' : 'حذف';
+        deleteBtn.className = 'delete-inventory-button';
+        deleteBtn.onclick = () => deleteInventory(index);
+
+        const pdfBtn = document.createElement('button');
+        pdfBtn.textContent = isEnglish ? 'PDF' : 'تنزيل PDF';
+        pdfBtn.className = 'pdf-button';
+        pdfBtn.onclick = () => downloadInventoryPDF(index);
+
+        buttonsDiv.appendChild(editBtn);
+        buttonsDiv.appendChild(deleteBtn);
+        buttonsDiv.appendChild(pdfBtn);
+
+        li.appendChild(dateSpan);
+        li.appendChild(personSpan);
+        li.appendChild(buttonsDiv);
+        list.appendChild(li);
+      });
+    }
+
+    // تعديل الجرد
+    function editInventory(index) {
+      const inv = inventories.filter(i => i.store === currentStore)[index];
+      if (!inv) return;
+      currentDate = inv.date;
+      document.getElementById('currentDateDisplay').textContent = isEnglish ? `التاريخ: ${currentDate}` : `التاريخ: ${currentDate}`;
+      document.getElementById('personName').value = inv.person;
+      populateInventoryTable();
+      const rows = document.querySelectorAll('#inventoryTable tbody tr');
+      inv.items.forEach(item => {
+        const row = Array.from(rows).find(r => r.cells[0].textContent === item.pesticide);
+        if (row) row.cells[1].querySelector('input').value = item.quantity;
+      });
+      document.getElementById('newInventorySection').classList.remove('hidden');
+      document.getElementById('pastInventoriesSection').classList.add('hidden');
+    }
+
+    // حذف الجرد
+    function deleteInventory(index) {
+      if (!confirm(isEnglish ? 'Delete this inventory?' : 'هل تريد حذف هذا الجرد؟')) return;
+      const inv = inventories.filter(i => i.store === currentStore)[index];
+      inventories = inventories.filter(i => !(i.store === inv.store && i.date === inv.date && i.person === inv.person));
+      saveData();
+      displayPastInventories();
+      alert(isEnglish ? 'Deleted!' : 'تم الحذف!');
+    }
+
+    // تنزيل PDF (يدعم العربية بشكل واضح)
+    function downloadInventoryPDF(index) {
+      const inv = inventories.filter(i => i.store === currentStore)[index];
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
+      const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      pdfContainer.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #27ae60; font-size: 24px;">تقرير المحصول</h1>
-          <h2 style="font-size: 20px;">${crop.localName}</h2>
-        </div>
-        ${crop.image ? `<img src="${crop.image}" style="width: 100%; max-width: 180px; height: auto; display: block; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px;" />` : ''}
-        <div style="margin: 20px 0; line-height: 2;">
-          <p><strong>الاسم المحلي:</strong> ${crop.localName}</p>
-          <p><strong>الاسم العلمي:</strong> ${crop.scientificName || 'غير محدد'}</p>
-          <p><strong>فترة التزهير:</strong> ${crop.floweringPeriod || 'غير محدد'}</p>
-          <p><strong>فترة الثمار:</strong> ${crop.fruitingPeriod || 'غير محدد'}</p>
-          <p><strong>عائلة النبتة:</strong> ${crop.family || 'غير محدد'}</p>
-          <p><strong>عمر النبتة:</strong> ${crop.lifespan || 'غير محدد'}</p>
-          <p><strong>الموقع:</strong> ${crop.location || 'غير محدد'}</p>
-          <p><strong>احتياج التسميد:</strong> ${crop.fertilizationNeeds || 'غير محدد'}</p>
-        </div>
-      `;
+      // تضمين خط عربي واضح
+      doc.setFont('Amiri', 'normal');
+      doc.setFontSize(20);
 
-      try {
-        const img = pdfContainer.querySelector('img');
-        if (img) {
-          await new Promise((resolve) => {
-            if (img.complete) resolve();
-            else img.onload = resolve;
-          });
+      const title = isEnglish ? `Inventory Report - ${inv.date}` : `تقرير الجرد - ${inv.date}`;
+      const storeText = isEnglish ? `المخزن: ${inv.store}` : `المخزن: ${inv.store}`;
+      const personText = isEnglish ? `المسؤول: ${inv.person}` : `المسؤول: ${inv.person}`;
+      const headers = isEnglish ? [['Pesticide', 'Quantity']] : [['اسم المبيد', 'الكمية']];
+      const data = inv.items.map(item => [item.pesticide, item.quantity]);
+
+      doc.text(title, 14, 15);
+      doc.setFontSize(16);
+      doc.text(storeText, 14, 25);
+      doc.text(personText, 14, 32);
+
+      doc.autoTable({
+        head: headers,
+        body: data,
+        startY: 40,
+        theme: 'grid',
+        styles: {
+          font: 'Amiri',
+          halign: 'right',
+          rtl: true,
+          fontSize: 12,
+          cellPadding: 4
+        },
+        headStyles: {
+          fillColor: [52, 152, 219],
+          textColor: 255,
+          halign: 'center'
+        },
+        columnStyles: {
+          0: { cellWidth: 'auto' },
+          1: { halign: 'center' }
         }
+      });
 
-        const canvas = await html2canvas(pdfContainer, {
-          scale: 3,
-          useCORS: true,
-          backgroundColor: 'white'
-        });
+      doc.save(isEnglish ? `Inventory_${inv.date}.pdf` : `جرد_${inv.date}.pdf`);
+    }
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.9);
-        const width = pdf.internal.pageSize.getWidth();
-        const height = (canvas.height * width) / canvas.width;
-
-        pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
-        pdf.save(`${crop.localName}.pdf`);
-
-        pdfContainer.innerHTML = '';
-
-      } catch (error) {
-        alert('فشل إنشاء PDF. حاول مجددًا.');
-      }
-    });
-
-    // تصدير البيانات
-    document.getElementById('exportBtn').addEventListener('click', () => {
-      const dataStr = JSON.stringify(crops, null, 2);
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'محاصيلي_زراعتي.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      alert('تم تصدير البيانات بنجاح! شارك الملف مع أصدقائك.');
-    });
-
-    // استيراد البيانات
-    document.getElementById('importBtn').addEventListener('click', () => {
-      document.getElementById('importFile').click();
-    });
-
-    document.getElementById('importFile').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const importedCrops = JSON.parse(ev.target.result);
-          if (Array.isArray(importedCrops)) {
-            crops = importedCrops;
-            localStorage.setItem('crops', JSON.stringify(crops));
-            renderCrops();
-            alert('تم استيراد البيانات بنجاح!');
-          } else {
-            throw new Error('الملف غير صالح');
-          }
-        } catch (err) {
-          alert('فشل استيراد البيانات. تأكد من أن الملف بصيغة صحيحة.');
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    // بحث
-    searchInput.addEventListener('input', renderCrops);
-
-    // تحميل المحاصيل
-    renderCrops();
+    // تحميل البيانات
+    window.onload = () => {
+      updateLanguage();
+      if (inventories.length > 0) viewPastInventories();
+    };
   </script>
 </body>
 </html>
