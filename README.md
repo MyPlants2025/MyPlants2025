@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -207,9 +208,6 @@
       border-radius: 8px;
       font-family: 'Tajawal', sans-serif;
     }
-    .download-all-btn:hover {
-      background-color: #7d3c98;
-    }
     .search-container {
       margin: 20px auto;
       text-align: center;
@@ -356,7 +354,7 @@
       "Vydate", "Hallmark", "Triclopyer", "Amistar Top", "Armetil C", "Curenox", "Equation", "Kocide",
       "Luna Sensation", "Miravise", "Ortiva", "Previcur Energy", "Score", "Top Guard", "Uniform",
       "Bio Cure-B", "Bio Cure-F", "Bio Catch", "Bio Power", "Mustard Oil", "Nimbecidine", "Xen Tari", "Dome Soap", "Sluge Killer"
-    ].sort(); // ترتيب أبجدي تلقائي
+    ].sort((a, b) => a.localeCompare(b, 'ar')); // ترتيب أبجدي دقيق
 
     let currentStore = '';
     let inventories = JSON.parse(localStorage.getItem('inventories')) || [];
@@ -393,7 +391,7 @@
       });
     }
 
-    // البحث عن المبيدات (تصفية فورية)
+    // البحث الفوري عن المبيدات
     document.getElementById('searchPesticide').addEventListener('input', function() {
       const searchTerm = this.value.toLowerCase();
       const filtered = pesticides.filter(p => p.toLowerCase().includes(searchTerm));
@@ -408,7 +406,7 @@
       if (!name) return alert(isEnglish ? 'Enter a valid name.' : 'أدخل اسمًا صالحًا.');
       if (pesticides.includes(name)) return alert(isEnglish ? 'Already exists.' : 'المبيد موجود مسبقًا.');
       pesticides.push(name);
-      pesticides.sort(); // الحفاظ على الترتيب الأبجدي
+      pesticides.sort((a, b) => a.localeCompare(b, 'ar'));
       saveData();
       alert(isEnglish ? `Added: ${name}` : `تمت الإضافة: ${name}`);
       document.getElementById('pesticideName').value = '';
@@ -637,49 +635,69 @@
       alert(isEnglish ? 'Deleted!' : 'تم الحذف!');
     }
 
-    // تنزيل تقرير الجرد كـ PDF
+    // تنزيل تقرير الجرد كـ PDF (مُحسّن)
     async function downloadInventoryPDF(index) {
       const inv = inventories[index];
       const { jsPDF } = window.jspdf;
+
+      // ترتيب المبيدات أبجديًا
+      const sortedItems = [...inv.items].sort((a, b) => a.pesticide.localeCompare(b.pesticide, 'ar'));
+
       const tempDiv = document.createElement('div');
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
       tempDiv.style.width = '210mm';
-      tempDiv.style.padding = '20px';
-      tempDiv.style.fontFamily = "'Amiri', sans-serif";
+      tempDiv.style.padding = '15px';
+      tempDiv.style.fontFamily = "'Amiri', 'Tajawal', sans-serif";
       tempDiv.style.direction = 'rtl';
       tempDiv.style.backgroundColor = 'white';
       tempDiv.style.color = '#333';
+      tempDiv.style.fontSize = '14px';
+
+      let tableHtml = '';
+      const rowsPerPage = 28; // عدد مناسب لحجم الصفحة
+
+      for (let i = 0; i < sortedItems.length; i += rowsPerPage) {
+        const pageItems = sortedItems.slice(i, i + rowsPerPage);
+        tableHtml += `
+          <table style="width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px;">
+            <thead>
+              <tr style="background-color: #2c3e50; color: white;">
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold;">اسم المبيد</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold;">الكمية</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pageItems.map(item => `
+                <tr>
+                  <td style="border: 1px solid #ddd; padding: 6px; text-align: right; white-space: nowrap; font-weight: 600;">${item.pesticide}</td>
+                  <td style="border: 1px solid #ddd; padding: 6px; text-align: center; font-weight: 600;">${item.quantity}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        if (i + rowsPerPage < sortedItems.length) {
+          tableHtml += '<div style="page-break-before: always;"></div>';
+        }
+      }
 
       tempDiv.innerHTML = `
-        <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #2c3e50; font-size: 26px; margin-bottom: 8px; font-weight: 700;">تقرير جرد المخزن</h1>
-          <h2 style="font-size: 20px; color: #555;">${inv.date}</h2>
+        <div style="text-align: center; margin-bottom: 15px;">
+          <h1 style="color: #2c3e50; font-size: 22px; margin-bottom: 5px; font-weight: 700; font-family: 'Amiri', sans-serif;">تقرير جرد المخزن</h1>
+          <h2 style="font-size: 18px; color: #555; font-family: 'Tajawal', sans-serif;">${inv.date}</h2>
         </div>
-        <div style="margin-bottom: 20px; font-size: 16px;">
-          <p><strong>اسم المخزن:</strong> ${inv.store}</p>
-          <p><strong>المسؤول:</strong> ${inv.person}</p>
+        <div style="margin-bottom: 20px; font-size: 15px; line-height: 1.8;">
+          <p><strong style="color: #2c3e50;">اسم المخزن:</strong> ${inv.store}</p>
+          <p><strong style="color: #2c3e50;">المسؤول عن الجرد:</strong> ${inv.person}</p>
+          <p><strong style="color: #2c3e50;">إجمالي المبيدات:</strong> ${sortedItems.length}</p>
         </div>
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
-          <thead>
-            <tr style="background-color: #2c3e50; color: white;">
-              <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">اسم المبيد</th>
-              <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">الكمية</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${inv.items.map(item => `
-              <tr>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: right; white-space: nowrap;">${item.pesticide}</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${item.quantity}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #777;">
-          تم إنشاء التقرير في: ${new Date().toLocaleString()}
+        ${tableHtml}
+        <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;">
+          تم إنشاء التقرير في: ${new Date().toLocaleString('ar-SA')}
         </div>
       `;
+
       document.body.appendChild(tempDiv);
 
       try {
@@ -690,19 +708,22 @@
           logging: false,
           backgroundColor: 'white'
         });
+
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
           format: 'a4'
         });
+
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`تقرير_جرد_${inv.store}_${inv.date}.pdf`);
       } catch (error) {
         console.error('خطأ في إنشاء PDF:', error);
-        alert(isEnglish ? 'Error generating PDF.' : 'حدث خطأ أثناء إنشاء الملف.');
+        alert('حدث خطأ أثناء إنشاء الملف. يرجى المحاولة مرة أخرى.');
       } finally {
         document.body.removeChild(tempDiv);
       }
@@ -714,6 +735,7 @@
         alert(isEnglish ? 'No pesticides to export.' : 'لا توجد مبيدات لتصديرها.');
         return;
       }
+
       const { jsPDF } = window.jspdf;
       const tempDiv = document.createElement('div');
       tempDiv.style.position = 'absolute';
@@ -724,18 +746,21 @@
       tempDiv.style.direction = 'rtl';
       tempDiv.style.backgroundColor = 'white';
 
+      const sortedPesticides = [...pesticides].sort((a, b) => a.localeCompare(b, 'ar'));
+
       tempDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 20px;">
           <h1 style="color: #2c3e50; font-size: 26px; margin-bottom: 8px; font-weight: 700;">قائمة جميع المبيدات</h1>
           <p style="font-size: 16px; color: #555;">تاريخ التصدير: ${new Date().toLocaleDateString()}</p>
         </div>
         <div style="column-count: 2; column-gap: 30px; font-size: 16px; line-height: 2;">
-          ${pesticides.map((p, i) => `<div style="margin-bottom: 8px;"><strong>${i+1}.</strong> ${p}</div>`).join('')}
+          ${sortedPesticides.map((p, i) => `<div style="margin-bottom: 8px;"><strong>${i+1}.</strong> ${p}</div>`).join('')}
         </div>
         <div style="text-align: center; margin-top: 30px; font-size: 14px; color: #777;">
-          <strong>إجمالي العدد:</strong> ${pesticides.length} مبيد
+          <strong>إجمالي العدد:</strong> ${sortedPesticides.length} مبيد
         </div>
       `;
+
       document.body.appendChild(tempDiv);
 
       try {
@@ -746,19 +771,22 @@
           logging: false,
           backgroundColor: 'white'
         });
+
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
           format: 'a4'
         });
+
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         pdf.save('جميع_المبيدات.pdf');
       } catch (error) {
         console.error('خطأ في إنشاء PDF:', error);
-        alert(isEnglish ? 'Error generating PDF.' : 'حدث خطأ أثناء إنشاء الملف.');
+        alert('حدث خطأ أثناء إنشاء الملف.');
       } finally {
         document.body.removeChild(tempDiv);
       }
@@ -771,6 +799,7 @@
         alert(isEnglish ? 'No inventory data for this store.' : 'لا توجد بيانات جرد لهذا المخزن.');
         return;
       }
+
       const { jsPDF } = window.jspdf;
       const tempDiv = document.createElement('div');
       tempDiv.style.position = 'absolute';
@@ -801,6 +830,7 @@
           تم إنشاء هذا التقرير باستخدام نظام إدارة مخزن المبيدات
         </div>
       `;
+
       document.body.appendChild(tempDiv);
 
       try {
@@ -811,19 +841,22 @@
           logging: false,
           backgroundColor: 'white'
         });
+
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
           format: 'a4'
         });
+
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`ملخص_${currentStore}.pdf`);
       } catch (error) {
         console.error('خطأ في إنشاء PDF:', error);
-        alert(isEnglish ? 'Error generating PDF.' : 'حدث خطأ أثناء إنشاء الملف.');
+        alert('حدث خطأ أثناء إنشاء الملف.');
       } finally {
         document.body.removeChild(tempDiv);
       }
